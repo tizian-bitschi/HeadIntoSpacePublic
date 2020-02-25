@@ -43,6 +43,7 @@ flutter:
 
   assets:
     - assets/images/background.jpg
+    - assets/images/dragon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

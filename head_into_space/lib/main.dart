@@ -1,6 +1,7 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/flame.dart';
+import 'package:head_into_space/Component.dart';
 
 var game;
 
@@ -33,6 +34,8 @@ class GameWrapper extends StatelessWidget {
   }
 }
 
+Component component;
+
 class MyApp extends BaseGame {
   Future<Size> dimensions;
 
@@ -41,13 +44,20 @@ class MyApp extends BaseGame {
   //Makes canvas ready to draw something on it (a sprite).
   @override
   void render(Canvas canvas) {
-    String text = "Score: 0";
-    TextPainter textPainter =
-        Flame.util.text(text, color: Colors.white, fontSize: 48.0);
-    textPainter.paint(canvas, Offset(size.width / 5, size.height / 2));
+    super.render(canvas);
   }
+
+  double creationTimer = 0.0;
 
   //Receives time input that helps in moving on to the next state.
   @override
-  void update(double t) {}
+  void update(double t) {
+    creationTimer += t;
+    if (creationTimer >= 4) {
+      creationTimer = 0.0;
+      component = new Component(dimensions);
+      add(component);
+    }
+    super.update(t);
+  }
 }
