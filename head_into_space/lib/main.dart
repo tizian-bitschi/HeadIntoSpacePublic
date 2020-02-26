@@ -1,11 +1,10 @@
 import 'package:flame/flame.dart';
-import 'package:flame/gestures.dart';
 import 'package:flame/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:head_into_space/GameEngine.dart';
 import 'package:flutter/gestures.dart';
-import 'package:sensors/sensors.dart';
+import 'package:sensors/sensors.dart' as sensors;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +31,4 @@ void main() async {
 
   PanGestureRecognizer tapper = PanGestureRecognizer();
   flameUtil.addGestureRecognizer(tapper);
-
-
 }

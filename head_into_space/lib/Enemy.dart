@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:developer' as console;
+import 'package:head_into_space/Bullets/LaserLevelOne.dart';
 import 'package:head_into_space/GameEngine.dart';
 import 'package:flame/sprite.dart';
 
@@ -17,6 +18,9 @@ class Enemy {
 
   double deadSpriteIndex;
   double health;
+  double speed;
+  double shootSpeed;
+  double shootCooldown = 0;
 
   Enemy(this.game, double x, double y) {
     this.enemyRect = Rect.fromLTWH(x, y, game.tileSize, game.tileSize);
@@ -42,12 +46,28 @@ class Enemy {
   }
 
   void update(double t) {
+    if (this.enemyRect.bottom > this.game.screenSize.height) {
+      this.isDead = true;
+    }
+
     if (this.isDead && this.deadSpriteIndex < 7) {
       this.deadSpriteIndex += 1;
     }
 
     if (this.deadSpriteIndex > 6) {
       this.toDestroy = true;
+    }
+
+    if (this.shootCooldown > this.shootSpeed) {
+      this.game.bullets.add(
+          LaserLevelOne(this.game, this.enemyRect.left, this.enemyRect.top));
+      this.shootCooldown = 0;
+    }
+
+    if (!this.isDead) {
+      this.enemyRect =
+          this.enemyRect.translate(0, this.game.tileSize * this.speed * t);
+      this.shootCooldown++;
     }
   }
 
@@ -56,7 +76,6 @@ class Enemy {
   }
 
   void onHit(double damage) {
-    console.log("Health: " + this.health.toString());
     if (this.health - damage < 0) {
       this.health = 0;
       this.isDead = true;

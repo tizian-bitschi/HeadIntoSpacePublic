@@ -7,6 +7,7 @@ class Bullet {
   final GameEngine game;
 
   bool toDestroy = false;
+  bool friendly;
 
   double bulletSpeed;
   double bulletDirection;

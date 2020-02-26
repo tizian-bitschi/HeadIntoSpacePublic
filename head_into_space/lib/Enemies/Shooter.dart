@@ -6,5 +6,7 @@ class Shooter extends Enemy {
   Shooter(GameEngine game, double x, double y) : super(game, x, y) {
     this.aliveSprite = Sprite('Enemies/enemyRed1.png');
     this.health = 10;
+    this.speed = 2;
+    this.shootSpeed = 75;
   }
 }
