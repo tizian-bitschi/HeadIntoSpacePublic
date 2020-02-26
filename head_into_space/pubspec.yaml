@@ -43,6 +43,14 @@ flutter:
 
   assets:
     - assets/images/NebulaBlue.png
+    - assets/images/Enemies/enemyRed1.png
+    - assets/images/explosion-0.png
+    - assets/images/explosion-1.png
+    - assets/images/explosion-2.png
+    - assets/images/explosion-3.png
+    - assets/images/explosion-4.png
+    - assets/images/explosion-5.png
+    - assets/images/explosion-6.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -4,35 +4,38 @@ import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';
 import 'package:head_into_space/EnemyShooter.dart';
+import 'package:head_into_space/Background.dart';
 
 class GameEngine extends Game {
   Size screenSize;
 
-  double tileSize;
+  double tileSize; // Size of a tile based on the screen width.
 
   Random rnd;
 
   List<EnemyShooter> enemyShooters;
 
+  Background background;
+
   GameEngine() {
     this.initialize();
   }
 
+  // To avoid that basic initializations are redone in the resize function, there is one especially for that here.
   void initialize() async {
     this.rnd = Random();
 
     this.enemyShooters = List<EnemyShooter>();
 
-    resize(await Flame.util.initialDimensions());
+    this.resize(await Flame.util.initialDimensions());
+
+    this.background = Background(this);
 
     this.spawnEnemyShooter();
   }
 
   void render(Canvas canvas) {
-    Rect background = Rect.fromLTWH(0, 0, this.screenSize.width, this.screenSize.height);
-    Paint bgPaint = Paint();
-    bgPaint.color = Color(0xff576574);
-    canvas.drawRect(background, bgPaint);
+    this.background.render(canvas);
 
     this.enemyShooters.forEach((EnemyShooter es) => es.render(canvas));
   }
@@ -40,11 +43,6 @@ class GameEngine extends Game {
   void update(double t) {
     this.enemyShooters.forEach((EnemyShooter es) => es.update(t));
     this.enemyShooters.removeWhere((EnemyShooter es) => es.isOffScreen);
-  }
-
-  void resize(Size size) {
-    this.screenSize = size;
-    this.tileSize = this.screenSize.width/9;
   }
 
   void onTapDown(TapDownDetails d) {
@@ -60,5 +58,10 @@ class GameEngine extends Game {
     double y = this.rnd.nextDouble() * (this.screenSize.height - this.tileSize);
 
     this.enemyShooters.add(EnemyShooter(this, x, y));
+  }
+
+  void resize(Size size) {
+    this.screenSize = size;
+    this.tileSize = this.screenSize.width/9;
   }
 }

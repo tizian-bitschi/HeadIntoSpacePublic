@@ -1,3 +1,4 @@
+import 'package:flame/flame.dart';
 import 'package:flame/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,18 @@ void main() async {
   Util flameUtil = new Util();
   await flameUtil.fullScreen();
   await flameUtil.setOrientation(DeviceOrientation.portraitUp);
+
+  Flame.images.loadAll(<String>[
+    'NebulaBlue.png',
+    'Enemies/enemyRed1.png',
+    'explosion-0.png',
+    'explosion-1.png',
+    'explosion-2.png',
+    'explosion-3.png',
+    'explosion-4.png',
+    'explosion-5.png',
+    'explosion-6.png',
+  ]);
 
   GameEngine game = GameEngine();
   runApp(game.widget);
