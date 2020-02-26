@@ -9,6 +9,7 @@ import 'package:head_into_space/Enemy.dart';
 import 'package:head_into_space/Background.dart';
 import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Enemies/Shooter.dart';
+import 'package:head_into_space/Player.dart';
 
 class GameEngine extends Game {
   Size screenSize;
@@ -19,6 +20,8 @@ class GameEngine extends Game {
 
   List<Enemy> enemys;
   List<Bullet> bullets;
+
+  Player player;
 
   Background background;
 
@@ -37,14 +40,19 @@ class GameEngine extends Game {
 
     this.background = Background(this);
 
+    this.player = Player(this, this.tileSize * 4, this.screenSize.height - (tileSize * 3));
+
     this.spawnEnemy();
   }
 
   void render(Canvas canvas) {
     this.background.render(canvas);
 
-    this.enemys.forEach((Enemy es) => es.render(canvas));
     this.bullets.forEach((Bullet b) => b.render(canvas));
+
+    this.enemys.forEach((Enemy es) => es.render(canvas));
+
+    this.player.render(canvas);
   }
 
   void update(double t) {
@@ -58,14 +66,20 @@ class GameEngine extends Game {
       });
     });
     this.bullets.forEach((Bullet b) => b.update(t));
+    this.player.update(t);
     this.enemys.removeWhere((Enemy es) => es.toDestroy);
     this.bullets.removeWhere((Bullet b) => b.toDestroy);
   }
 
-  void onTapDown(TapDownDetails d) {
+  void onTapDown(DragUpdateDetails d) {
     this
         .bullets
         .add(FriendlyLaser(this, d.globalPosition.dx, d.globalPosition.dy));
+    console.log("Start: " + d.globalPosition.toString());
+  }
+
+  void onUpdate(LongPressMoveUpdateDetails d) {
+    console.log("Update: " + d.globalPosition.toString());
   }
 
   void spawnEnemy() {
