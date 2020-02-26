@@ -12,9 +12,12 @@ import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Enemies/Shooter.dart';
 import 'package:head_into_space/Player.dart';
 import 'package:sensors/sensors.dart';
+import 'package:esense_flutter/esense.dart';
 
 class GameEngine extends Game {
   Size screenSize;
+
+  bool withHead = false;
 
   double tileSize; // Size of a tile based on the screen width.
   double spawnSpeed = 250;
@@ -22,12 +25,13 @@ class GameEngine extends Game {
 
   math.Random rnd;
 
-  List<Enemy> enemys;
+  List<Enemy> enemies;
   List<Bullet> bullets;
 
   AccelerometerEvent acceleration;
 
   StreamSubscription<AccelerometerEvent> _streamSubscription;
+  StreamSubscription<SensorEvent> _sensorSubscription;
 
   Player player;
 
@@ -39,14 +43,27 @@ class GameEngine extends Game {
 
   // To avoid that basic initializations are redone in the resize function, there is one especially for that here.
   void initialize() async {
-    this.rnd = math.Random();
-
-    _streamSubscription =
-        accelerometerEvents.listen((AccelerometerEvent event) {
-      this.player.move(event);
+    ESenseManager.connectionEvents.listen((event) {
+      console.log('CONNECTION event: $event');
     });
 
-    this.enemys = List<Enemy>();
+    bool success = await ESenseManager.connect("eSense-1409");
+    console.log("Connected: " + success.toString());
+
+    console.log(ESenseManager.connected.toString());
+    console.log(ESenseManager.eSenseDeviceName);
+    ESenseManager.sensorEvents.listen((event) {
+      console.log(event.toString());
+    });
+
+    this.rnd = math.Random();
+
+    //_streamSubscription =
+    //    accelerometerEvents.listen((AccelerometerEvent event) {
+    //  this.player.move(event);
+    //});
+
+    this.enemies = List<Enemy>();
     this.bullets = List<Bullet>();
 
     this.resize(await Flame.util.initialDimensions());
@@ -62,7 +79,7 @@ class GameEngine extends Game {
 
     this.bullets.forEach((Bullet b) => b.render(canvas));
 
-    this.enemys.forEach((Enemy es) => es.render(canvas));
+    this.enemies.forEach((Enemy es) => es.render(canvas));
 
     this.player.render(canvas);
   }
@@ -73,7 +90,7 @@ class GameEngine extends Game {
       this.spawnCooldown = 0;
     }
 
-    this.enemys.forEach((Enemy es) {
+    this.enemies.forEach((Enemy es) {
       es.update(t);
       this.bullets.forEach((Bullet b) {
         if (es.enemyRect.contains(b.bulletRect.topCenter) && b.friendly) {
@@ -81,7 +98,8 @@ class GameEngine extends Game {
           b.destroy();
         }
 
-        if (this.player.playerRect.contains(b.bulletRect.bottomCenter) && !b.friendly) {
+        if (this.player.playerRect.contains(b.bulletRect.bottomCenter) &&
+            !b.friendly) {
           this.player.onDamage(b);
           b.destroy();
         }
@@ -89,27 +107,18 @@ class GameEngine extends Game {
     });
     this.bullets.forEach((Bullet b) => b.update(t));
     this.player.update(t);
-    this.enemys.removeWhere((Enemy es) => es.toDestroy);
+    this.enemies.removeWhere((Enemy es) => es.toDestroy);
     this.bullets.removeWhere((Bullet b) => b.toDestroy);
     this.spawnCooldown++;
   }
 
-  void onTapDown(DragUpdateDetails d) {
-    this
-        .bullets
-        .add(FriendlyLaser(this, d.globalPosition.dx, d.globalPosition.dy));
-    console.log("Start: " + d.globalPosition.toString());
-  }
-
-  void onUpdate(LongPressMoveUpdateDetails d) {
-    console.log("Update: " + d.globalPosition.toString());
-  }
+  void onTap(TapUpDetails d) {}
 
   void spawnEnemy() {
     double x = this.rnd.nextDouble() * (this.screenSize.width - this.tileSize);
     double y = 0;
 
-    this.enemys.add(Shooter(this, x, y));
+    this.enemies.add(Shooter(this, x, y));
   }
 
   void resize(Size size) {
