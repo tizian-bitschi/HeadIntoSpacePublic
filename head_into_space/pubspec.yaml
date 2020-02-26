@@ -51,6 +51,7 @@ flutter:
     - assets/images/explosion-4.png
     - assets/images/explosion-5.png
     - assets/images/explosion-6.png
+    - assets/images/Lasers/laserBlue03.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

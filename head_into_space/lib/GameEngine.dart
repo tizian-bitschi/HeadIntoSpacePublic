@@ -1,10 +1,14 @@
 import 'dart:math';
 import 'dart:ui';
+import 'dart:developer' as console;
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';
-import 'package:head_into_space/EnemyShooter.dart';
+import 'package:head_into_space/Bullets/FriendlyLaser.dart';
+import 'package:head_into_space/Enemy.dart';
 import 'package:head_into_space/Background.dart';
+import 'package:head_into_space/Bullet.dart';
+import 'package:head_into_space/Enemies/Shooter.dart';
 
 class GameEngine extends Game {
   Size screenSize;
@@ -13,7 +17,8 @@ class GameEngine extends Game {
 
   Random rnd;
 
-  List<EnemyShooter> enemyShooters;
+  List<Enemy> enemys;
+  List<Bullet> bullets;
 
   Background background;
 
@@ -25,43 +30,53 @@ class GameEngine extends Game {
   void initialize() async {
     this.rnd = Random();
 
-    this.enemyShooters = List<EnemyShooter>();
+    this.enemys = List<Enemy>();
+    this.bullets = List<Bullet>();
 
     this.resize(await Flame.util.initialDimensions());
 
     this.background = Background(this);
 
-    this.spawnEnemyShooter();
+    this.spawnEnemy();
   }
 
   void render(Canvas canvas) {
     this.background.render(canvas);
 
-    this.enemyShooters.forEach((EnemyShooter es) => es.render(canvas));
+    this.enemys.forEach((Enemy es) => es.render(canvas));
+    this.bullets.forEach((Bullet b) => b.render(canvas));
   }
 
   void update(double t) {
-    this.enemyShooters.forEach((EnemyShooter es) => es.update(t));
-    this.enemyShooters.removeWhere((EnemyShooter es) => es.isOffScreen);
+    this.enemys.forEach((Enemy es) {
+      es.update(t);
+      this.bullets.forEach((Bullet b) {
+        if (es.enemyRect.contains(b.bulletRect.topCenter)) {
+          es.onHit(b.damage);
+          b.destroy();
+        }
+      });
+    });
+    this.bullets.forEach((Bullet b) => b.update(t));
+    this.enemys.removeWhere((Enemy es) => es.toDestroy);
+    this.bullets.removeWhere((Bullet b) => b.toDestroy);
   }
 
   void onTapDown(TapDownDetails d) {
-    this.enemyShooters.forEach((EnemyShooter es) {
-      if (es.enemyShooterRect.contains(d.globalPosition)) {
-        es.onTapDown();
-      }
-    });
+    this
+        .bullets
+        .add(FriendlyLaser(this, d.globalPosition.dx, d.globalPosition.dy));
   }
 
-  void spawnEnemyShooter() {
+  void spawnEnemy() {
     double x = this.rnd.nextDouble() * (this.screenSize.width - this.tileSize);
     double y = this.rnd.nextDouble() * (this.screenSize.height - this.tileSize);
 
-    this.enemyShooters.add(EnemyShooter(this, x, y));
+    this.enemys.add(Shooter(this, x, y));
   }
 
   void resize(Size size) {
     this.screenSize = size;
-    this.tileSize = this.screenSize.width/9;
+    this.tileSize = this.screenSize.width / 9;
   }
 }

@@ -22,6 +22,7 @@ void main() async {
     'explosion-4.png',
     'explosion-5.png',
     'explosion-6.png',
+    'Lasers/laserBlue03.png'
   ]);
 
   GameEngine game = GameEngine();
