@@ -12,10 +12,10 @@ class Player {
   final GameEngine game;
 
   double health = 100;
-  double speed = 2;
+  double speed = 12;
   double toX = 0;
   double toY = 0;
-  double shootSpeed = 25;
+  double shootSpeed = 15;
   double shootCooldown = 0;
 
   Rect playerRect;
@@ -35,15 +35,27 @@ class Player {
 
   void update(double t) {
     if (this.shootCooldown > this.shootSpeed) {
-      this.game.bullets.add(FriendlyLaser(
-          this.game,
-          this.playerRect.left,
-          this.playerRect.top));
+      this.game.bullets.add(
+          FriendlyLaser(this.game, this.playerRect.left, this.playerRect.top));
       this.shootCooldown = 0;
     }
 
     double tempX = this.game.tileSize * this.toX * t * this.speed;
     double tempY = this.game.tileSize * this.toY * t * this.speed;
+
+    if (this.playerRect.left + tempX < 0) {
+      tempX = -this.playerRect.left;
+    }
+    if (this.playerRect.right + tempX > this.game.screenSize.width) {
+      tempX = this.game.screenSize.width - this.playerRect.right;
+    }
+    if (this.playerRect.top + tempY < 0) {
+      tempY = -this.playerRect.top;
+    }
+    if (this.playerRect.bottom + tempY > this.game.screenSize.height) {
+      tempY = this.game.screenSize.height - this.playerRect.bottom;
+    }
+
     math.Point<double> tempDir = math.Point<double>(tempX, tempY);
 
     this.playerRect = this.playerRect.translate(tempDir.x, tempDir.y);
@@ -52,7 +64,6 @@ class Player {
 
   void onDamage(Bullet b) {
     this.health -= b.damage;
-    console.log("Health: " + this.health.toString());
   }
 
   void move(math.Point<double> d) {

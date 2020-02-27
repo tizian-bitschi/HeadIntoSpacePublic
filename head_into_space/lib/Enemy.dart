@@ -1,11 +1,14 @@
 import 'dart:ui';
 import 'dart:developer' as console;
+import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Bullets/LaserLevelOne.dart';
 import 'package:head_into_space/GameEngine.dart';
 import 'package:flame/sprite.dart';
 
 class Enemy {
   final GameEngine game;
+
+  Bullet bullet;
 
   bool isDead = false;
   bool toDestroy = false;
@@ -23,6 +26,7 @@ class Enemy {
   double shootCooldown = 0;
 
   Enemy(this.game, double x, double y) {
+    this.bullet = LaserLevelOne(this.game, 0, 0);
     this.enemyRect = Rect.fromLTWH(x, y, game.tileSize, game.tileSize);
     this.deadAnimation = List<Sprite>();
     this.deadAnimation.add(Sprite('explosion-0.png'));
@@ -56,6 +60,9 @@ class Enemy {
 
     if (this.deadSpriteIndex > 6) {
       this.toDestroy = true;
+      if (this.game.spawnSpeed > 5) {
+        this.game.spawnSpeed -= 1;
+      }
     }
 
     if (this.shootCooldown > this.shootSpeed) {
@@ -79,6 +86,7 @@ class Enemy {
     if (this.health - damage < 0) {
       this.health = 0;
       this.isDead = true;
+      this.game.score++;
     } else {
       this.health -= damage;
     }

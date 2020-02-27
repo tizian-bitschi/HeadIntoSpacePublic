@@ -12,6 +12,10 @@ import 'package:head_into_space/Enemies/Shooter.dart';
 import 'package:head_into_space/Player.dart';
 import 'package:esense_flutter/esense.dart';
 import 'package:sensors/sensors.dart';
+import 'package:head_into_space/Button.dart';
+import 'package:wakelock/wakelock.dart';
+import 'package:head_into_space/ScoreDisplay.dart';
+import 'package:head_into_space/HealthDisplay.dart';
 
 class GameEngine extends Game {
   // ESENSE //
@@ -35,9 +39,10 @@ class GameEngine extends Game {
   bool listening = false;
 
   double tileSize; // Size of a tile based on the screen width.
-  double spawnSpeed = 250;
-  double spawnCooldown = 0;
-  double cooldown = 30;
+  double spawnSpeed;
+  double spawnCooldown;
+  double cooldown;
+  int score;
 
   math.Random rnd;
 
@@ -46,7 +51,12 @@ class GameEngine extends Game {
   String deviceAccel = "";
 
   List<Enemy> enemies;
+
   List<Bullet> bullets;
+
+  ScoreDisplay scoreDisplay;
+
+  HealthDisplay healthDisplay;
 
   Player player;
 
@@ -58,18 +68,16 @@ class GameEngine extends Game {
 
   // To avoid that basic initializations are redone in the resize function, there is one especially for that here.
   void initialize() async {
+    Wakelock.enable();
+
     this._connectToESense();
 
     this.rnd = math.Random();
 
-    accelerometerEvents.listen((AccelerometerEvent event) {
-      this.deviceAccel = "Device accel - X: " +
-          event.x.toString() +
-          ", Y: " +
-          event.y.toString() +
-          ", Z: " +
-          event.z.toString();
-    });
+    this.spawnSpeed = 175;
+    this.spawnCooldown = 0;
+    this.cooldown = 30;
+    this.score = 0;
 
     this.enemies = List<Enemy>();
     this.bullets = List<Bullet>();
@@ -78,29 +86,33 @@ class GameEngine extends Game {
 
     this.background = Background(this);
 
+    this.scoreDisplay = ScoreDisplay(this);
+
+    this.healthDisplay = HealthDisplay(this);
+
     this.player = Player(
         this, this.tileSize * 4, this.screenSize.height - (tileSize * 3));
   }
 
   void render(Canvas canvas) {
-    this.background.render(canvas);
+    if (this.listening) {
+      this.background.render(canvas);
 
-    this.bullets.forEach((Bullet b) => b.render(canvas));
+      this.bullets.forEach((Bullet b) => b.render(canvas));
 
-    this.enemies.forEach((Enemy es) => es.render(canvas));
+      this.enemies.forEach((Enemy es) => es.render(canvas));
 
-    this.player.render(canvas);
+      this.player.render(canvas);
+
+      this.scoreDisplay.render(canvas);
+      this.healthDisplay.render(canvas);
+    }
   }
 
   void update(double t) {
-    if (cooldown < 0) {
-      console.log(this._event);
-      console.log("Direction - " + this.accel.toString());
-
+    if (cooldown < 0 && this._deviceStatus == "connected" && !this.listening) {
       cooldown = 120;
-      if (this._deviceStatus == "connected" && !this.listening) {
-        this._startListenToSensorEvents();
-      }
+      this._startListenToSensorEvents();
     }
     cooldown--;
 
@@ -111,24 +123,27 @@ class GameEngine extends Game {
       }
 
       this.enemies.forEach((Enemy es) {
-        es.update(t);
         this.bullets.forEach((Bullet b) {
           if (es.enemyRect.contains(b.bulletRect.topCenter) && b.friendly) {
             es.onHit(b.damage);
             b.destroy();
           }
-
-          if (this.player.playerRect.contains(b.bulletRect.bottomCenter) &&
-              !b.friendly) {
-            this.player.onDamage(b);
-            b.destroy();
-          }
         });
+        es.update(t);
       });
-      this.bullets.forEach((Bullet b) => b.update(t));
-      this.player.update(t);
+      this.bullets.forEach((Bullet b) {
+        if (this.player.playerRect.contains(b.bulletRect.bottomCenter) &&
+            !b.friendly) {
+          this.player.onDamage(b);
+          b.destroy();
+        }
+        b.update(t);
+      });
       this.enemies.removeWhere((Enemy es) => es.toDestroy);
       this.bullets.removeWhere((Bullet b) => b.toDestroy);
+      this.player.update(t);
+      this.scoreDisplay.update(t);
+      this.healthDisplay.update(t);
       this.spawnCooldown++;
     }
   }
@@ -136,10 +151,10 @@ class GameEngine extends Game {
   void onTap(TapUpDetails d) {}
 
   void spawnEnemy() {
-    double x = this.rnd.nextDouble() * (this.screenSize.width - this.tileSize);
+    double x = this.rnd.nextDouble() * 8;
     double y = 0;
 
-    this.enemies.add(Shooter(this, x, y));
+    this.enemies.add(Shooter(this, x * this.tileSize, y));
   }
 
   void resize(Size size) {
@@ -243,15 +258,21 @@ class GameEngine extends Game {
       _event = event.toString();
       double tempX = 0;
       double tempY = 0;
-      if (event.accel[1] > -1200 && event.accel[2] < 800) {
-        tempY = -1;
-      } else if (event.accel[1] < -4300 && event.accel[2] > 1200) {
-        tempY = 1;
-      } else if (event.accel[1] < -3400 && event.accel[2] > -600) {
-        tempX = -1;
-      } else if (event.accel[1] > -2600 && event.accel[2] > 2000) {
-        tempX = 1;
+      if (event.accel[1] > 500) {
+        tempY = -1 * (event.accel[1] / 6600);
+      } else if (event.accel[1] <= 500 && event.accel[1] >= -500) {
+        tempY = 0;
+      } else {
+        tempY = event.accel[1] / -8000;
       }
+      if (event.accel[2] > 500) {
+        tempX = event.accel[2] / 7200;
+      } else if (event.accel[2] <= 500 && event.accel[2] >= -500) {
+        tempX = 0;
+      } else {
+        tempX = -1 * (event.accel[2] / -9600);
+      }
+      this.player.move(math.Point<double>(tempX, tempY));
       this.accel = math.Point<double>(tempX, tempY);
     });
 
@@ -260,6 +281,8 @@ class GameEngine extends Game {
 
   void _pauseListenToSensorEvents() async {
     subscription.cancel();
+
+    this.listening = false;
 
     sampling = false;
   }
