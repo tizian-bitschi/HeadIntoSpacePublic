@@ -35,8 +35,10 @@ class Player {
 
   void update(double t) {
     if (this.shootCooldown > this.shootSpeed) {
-      this.game.bullets.add(
-          FriendlyLaser(this.game, this.playerRect.left, this.playerRect.top));
+      this.game.bullets.add(FriendlyLaser(
+          this.game,
+          this.playerRect.left,
+          this.playerRect.top));
       this.shootCooldown = 0;
     }
 
@@ -53,9 +55,9 @@ class Player {
     console.log("Health: " + this.health.toString());
   }
 
-  void move(AccelerometerEvent e) {
-    this.toX = e.x * -1;
+  void move(math.Point<double> d) {
+    this.toX = d.x;
 
-    this.toY = e.y;
+    this.toY = d.y;
   }
 }
