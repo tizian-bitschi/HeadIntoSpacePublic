@@ -2,9 +2,10 @@ import 'dart:ui';
 import 'dart:developer' as console;
 import 'package:head_into_space/GameEngine.dart';
 import 'package:flame/sprite.dart';
+import 'package:head_into_space/Views/PlayingView.dart';
 
 class Bullet {
-  final GameEngine game;
+  final PlayingView game;
 
   bool toDestroy = false;
   bool friendly;

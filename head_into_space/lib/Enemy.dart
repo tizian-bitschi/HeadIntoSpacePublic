@@ -4,9 +4,10 @@ import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Bullets/LaserLevelOne.dart';
 import 'package:head_into_space/GameEngine.dart';
 import 'package:flame/sprite.dart';
+import 'package:head_into_space/Views/PlayingView.dart';
 
 class Enemy {
-  final GameEngine game;
+  final PlayingView game;
 
   Bullet bullet;
 

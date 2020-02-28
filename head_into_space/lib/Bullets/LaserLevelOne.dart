@@ -1,9 +1,10 @@
 import 'package:flame/sprite.dart';
 import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/GameEngine.dart';
+import 'package:head_into_space/Views/PlayingView.dart';
 
 class LaserLevelOne extends Bullet {
-  LaserLevelOne(GameEngine game, double x, double y) : super(game,x,y) {
+  LaserLevelOne(PlayingView game, double x, double y) : super(game,x,y) {
     this.friendly = false;
     this.bulletSpeed = 7;
     this.bulletDirection = 1;

@@ -7,6 +7,7 @@ import 'package:head_into_space/GameEngine.dart';
 import 'package:flutter/gestures.dart';
 import 'package:sensors/sensors.dart' as sensors;
 import 'package:esense_flutter/esense.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,11 +29,12 @@ void main() async {
     'Lasers/laserBlue03.png'
   ]);
 
+  SharedPreferences storage = await SharedPreferences.getInstance();
 
-  GameEngine game = GameEngine();
+  GameEngine game = GameEngine(storage);
   runApp(game.widget);
 
   TapGestureRecognizer tapper = TapGestureRecognizer();
-  tapper.onTapUp = game.onTap;
+  tapper.onTapDown = game.onTapDown;
   flameUtil.addGestureRecognizer(tapper);
 }

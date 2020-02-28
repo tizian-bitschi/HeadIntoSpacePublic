@@ -11,11 +11,14 @@ import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Enemies/Shooter.dart';
 import 'package:head_into_space/Player.dart';
 import 'package:esense_flutter/esense.dart';
-import 'package:sensors/sensors.dart';
-import 'package:head_into_space/Button.dart';
+import 'package:head_into_space/Views/LostView.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:head_into_space/ScoreDisplay.dart';
-import 'package:head_into_space/HealthDisplay.dart';
+import 'package:head_into_space/Displays/ScoreDisplay.dart';
+import 'package:head_into_space/Displays/HealthDisplay.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:head_into_space/View.dart';
+import 'package:head_into_space/Views/HomeView.dart';
+import 'package:head_into_space/Views/PlayingView.dart';
 
 class GameEngine extends Game {
   // ESENSE //
@@ -32,37 +35,30 @@ class GameEngine extends Game {
   String eSenseName = 'eSense-0678';
   ////////////
 
+  final SharedPreferences storage;
+
+  View activeView = View.home;
+
+  HomeView homeView;
+
+  PlayingView playingView;
+
+  LostView lostView;
+
   Size screenSize;
 
   bool withHead = false;
   bool tryConnect = true;
   bool listening = false;
 
-  double tileSize; // Size of a tile based on the screen width.
-  double spawnSpeed;
-  double spawnCooldown;
   double cooldown;
-  int score;
-
-  math.Random rnd;
-
-  math.Point<double> accel = math.Point<double>(0, 0);
+  double tileSize; // Size of a tile based on the screen width.
 
   String deviceAccel = "";
 
-  List<Enemy> enemies;
-
-  List<Bullet> bullets;
-
-  ScoreDisplay scoreDisplay;
-
-  HealthDisplay healthDisplay;
-
-  Player player;
-
   Background background;
 
-  GameEngine() {
+  GameEngine(this.storage) {
     this.initialize();
   }
 
@@ -70,91 +66,48 @@ class GameEngine extends Game {
   void initialize() async {
     Wakelock.enable();
 
-    this._connectToESense();
-
-    this.rnd = math.Random();
-
-    this.spawnSpeed = 175;
-    this.spawnCooldown = 0;
-    this.cooldown = 30;
-    this.score = 0;
-
-    this.enemies = List<Enemy>();
-    this.bullets = List<Bullet>();
-
     this.resize(await Flame.util.initialDimensions());
 
+    this._connectToESense();
+
+    this.cooldown = 120;
+
+    this.homeView = HomeView(this);
+    this.playingView = PlayingView(this);
+    this.lostView = LostView(this);
+
     this.background = Background(this);
-
-    this.scoreDisplay = ScoreDisplay(this);
-
-    this.healthDisplay = HealthDisplay(this);
-
-    this.player = Player(
-        this, this.tileSize * 4, this.screenSize.height - (tileSize * 3));
   }
 
   void render(Canvas canvas) {
     if (this.listening) {
       this.background.render(canvas);
 
-      this.bullets.forEach((Bullet b) => b.render(canvas));
-
-      this.enemies.forEach((Enemy es) => es.render(canvas));
-
-      this.player.render(canvas);
-
-      this.scoreDisplay.render(canvas);
-      this.healthDisplay.render(canvas);
+      if (this.activeView == View.home) this.homeView.render(canvas);
+      if (this.activeView == View.playing) this.playingView.render(canvas);
+      if (this.activeView == View.lost) this.lostView.render(canvas);
     }
   }
 
   void update(double t) {
-    if (cooldown < 0 && this._deviceStatus == "connected" && !this.listening) {
-      cooldown = 120;
+    if (this.cooldown <= 0 &&
+        this._deviceStatus == "connected" &&
+        !this.listening) {
+      this.cooldown = 120;
       this._startListenToSensorEvents();
     }
-    cooldown--;
+    this.cooldown--;
 
-    if (listening) {
-      if (this.spawnCooldown > this.spawnSpeed) {
-        this.spawnEnemy();
-        this.spawnCooldown = 0;
-      }
-
-      this.enemies.forEach((Enemy es) {
-        this.bullets.forEach((Bullet b) {
-          if (es.enemyRect.contains(b.bulletRect.topCenter) && b.friendly) {
-            es.onHit(b.damage);
-            b.destroy();
-          }
-        });
-        es.update(t);
-      });
-      this.bullets.forEach((Bullet b) {
-        if (this.player.playerRect.contains(b.bulletRect.bottomCenter) &&
-            !b.friendly) {
-          this.player.onDamage(b);
-          b.destroy();
-        }
-        b.update(t);
-      });
-      this.enemies.removeWhere((Enemy es) => es.toDestroy);
-      this.bullets.removeWhere((Bullet b) => b.toDestroy);
-      this.player.update(t);
-      this.scoreDisplay.update(t);
-      this.healthDisplay.update(t);
-      this.spawnCooldown++;
-    }
+    if (this.activeView == View.home) this.homeView.update(t);
+    if (this.activeView == View.playing) this.playingView.update(t);
+    if (this.activeView == View.lost) this.lostView.update(t);
   }
 
-  void onTap(TapUpDetails d) {}
-
-  void spawnEnemy() {
-    double x = this.rnd.nextDouble() * 8;
-    double y = 0;
-
-    this.enemies.add(Shooter(this, x * this.tileSize, y));
+  void onTapDown(TapDownDetails d) {
+    if (this.listening) {
+      if (this.activeView == View.home) this.homeView.onTapDown(d);
+      if (this.activeView == View.lost) this.lostView.onTapDown(d);
+    }
   }
 
   void resize(Size size) {
@@ -251,29 +204,31 @@ class GameEngine extends Game {
   }
 
   void _startListenToSensorEvents() async {
+    console.log(this.listening.toString());
     // subscribe to sensor event from the eSense device
     subscription = ESenseManager.sensorEvents.listen((event) {
       this.listening = true;
       //console.log('SENSOR event: $event');
       _event = event.toString();
-      double tempX = 0;
-      double tempY = 0;
-      if (event.accel[1] > 500) {
-        tempY = -1 * (event.accel[1] / 6600);
-      } else if (event.accel[1] <= 500 && event.accel[1] >= -500) {
-        tempY = 0;
-      } else {
-        tempY = event.accel[1] / -8000;
+      if (this.activeView == View.playing) {
+        double tempX = 0;
+        double tempY = 0;
+        if (event.accel[1] > 500) {
+          tempY = -1 * (event.accel[1] / 6600);
+        } else if (event.accel[1] <= 500 && event.accel[1] >= -500) {
+          tempY = 0;
+        } else {
+          tempY = event.accel[1] / -8000;
+        }
+        if (event.accel[2] > 500) {
+          tempX = event.accel[2] / 7200;
+        } else if (event.accel[2] <= 500 && event.accel[2] >= -500) {
+          tempX = 0;
+        } else {
+          tempX = -1 * (event.accel[2] / -9600);
+        }
+        this.playingView.player.move(math.Point<double>(tempX, tempY));
       }
-      if (event.accel[2] > 500) {
-        tempX = event.accel[2] / 7200;
-      } else if (event.accel[2] <= 500 && event.accel[2] >= -500) {
-        tempX = 0;
-      } else {
-        tempX = -1 * (event.accel[2] / -9600);
-      }
-      this.player.move(math.Point<double>(tempX, tempY));
-      this.accel = math.Point<double>(tempX, tempY);
     });
 
     sampling = true;

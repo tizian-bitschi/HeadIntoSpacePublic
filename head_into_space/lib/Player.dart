@@ -6,10 +6,11 @@ import 'package:flame/sprite.dart';
 import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Bullets/FriendlyLaser.dart';
 import 'package:head_into_space/GameEngine.dart';
+import 'package:head_into_space/Views/PlayingView.dart';
 import 'package:sensors/sensors.dart';
 
 class Player {
-  final GameEngine game;
+  final PlayingView game;
 
   double health = 100;
   double speed = 12;

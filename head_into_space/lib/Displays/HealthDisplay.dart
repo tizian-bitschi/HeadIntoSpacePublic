@@ -1,9 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/painting.dart';
 import 'package:head_into_space/GameEngine.dart';
+import 'package:head_into_space/Views/PlayingView.dart';
 
 class HealthDisplay {
-  final GameEngine game;
+  final PlayingView game;
 
   TextPainter painter;
 
@@ -19,14 +20,8 @@ class HealthDisplay {
 
     this.textStyle = TextStyle(
       color: Color(0xffffffff),
-      fontSize: 25,
-      shadows: <Shadow>[
-        Shadow(
-          blurRadius: 3,
-          color: Color(0xff000000),
-          offset: Offset(3, 3),
-        ),
-      ],
+      fontSize: 20,
+      fontFamily: "Nulshock",
     );
 
     position = Offset.zero;

@@ -1,9 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/painting.dart';
 import 'package:head_into_space/GameEngine.dart';
+import 'package:head_into_space/Views/PlayingView.dart';
 
-class ScoreDisplay {
-  final GameEngine game;
+class HighscoreDisplay {
+  final PlayingView game;
 
   TextPainter painter;
 
@@ -11,7 +12,7 @@ class ScoreDisplay {
 
   Offset position;
 
-  ScoreDisplay(this.game) {
+  HighscoreDisplay(this.game) {
     this.painter = TextPainter(
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
@@ -19,14 +20,8 @@ class ScoreDisplay {
 
     this.textStyle = TextStyle(
       color: Color(0xffffffff),
-      fontSize: 25,
-      shadows: <Shadow>[
-        Shadow(
-          blurRadius: 3,
-          color: Color(0xff000000),
-          offset: Offset(3, 3),
-        ),
-      ],
+      fontSize: 20,
+      fontFamily: "Nulshock",
     );
 
     position = Offset.zero;
@@ -36,18 +31,17 @@ class ScoreDisplay {
     this.painter.paint(c, this.position);
   }
 
-  void update(double t) {
-    if ((this.painter.text?.text ?? '') !=
-        "Score: " + this.game.score.toString()) {
+  void updateHighscore() {
+    if ((painter.text?.text ?? '') !=
+        "Health: " + this.game.player.health.toString()) {
       this.painter.text = TextSpan(
-        text: "Score: " + this.game.score.toString(),
+        text: "Health: " + this.game.player.health.toString(),
         style: textStyle,
       );
 
       this.painter.layout();
 
-      this.position = Offset(this.game.screenSize.width - this.painter.width,
-          this.painter.height / 2);
+      this.position = Offset(0, this.painter.height / 2);
     }
   }
 }
