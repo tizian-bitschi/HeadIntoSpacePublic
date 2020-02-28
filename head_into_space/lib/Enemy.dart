@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:developer' as console;
+import 'package:flame/flame.dart';
 import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Bullets/LaserLevelOne.dart';
 import 'package:head_into_space/GameEngine.dart';
@@ -70,6 +71,7 @@ class Enemy {
       this.game.bullets.add(
           LaserLevelOne(this.game, this.enemyRect.left, this.enemyRect.top));
       this.shootCooldown = 0;
+      Flame.audio.play("LaserLevelOne.mp3", volume: 1);
     }
 
     if (!this.isDead) {

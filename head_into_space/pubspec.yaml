@@ -51,6 +51,10 @@ flutter:
         - asset: assets/fonts/nulshock.ttf
 
   assets:
+    - assets/audio/music.mp3
+    - assets/audio/laserhit.mp3
+    - assets/audio/LaserLevelOne.mp3
+    - assets/audio/FriendlyLaser.mp3
     - assets/images/NebulaBlue.png
     - assets/images/Enemies/enemyRed1.png
     - assets/images/explosion-0.png

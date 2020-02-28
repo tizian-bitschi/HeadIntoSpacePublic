@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'dart:math' as math;
 import 'dart:developer' as console;
 
+import 'package:flame/flame.dart';
 import 'package:flame/sprite.dart';
 import 'package:head_into_space/Bullet.dart';
 import 'package:head_into_space/Bullets/FriendlyLaser.dart';
@@ -39,6 +40,7 @@ class Player {
       this.game.bullets.add(
           FriendlyLaser(this.game, this.playerRect.left, this.playerRect.top));
       this.shootCooldown = 0;
+      Flame.audio.play("FriendlyLaser.mp3", volume: 1.0);
     }
 
     double tempX = this.game.tileSize * this.toX * t * this.speed;

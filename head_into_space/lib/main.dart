@@ -29,6 +29,13 @@ void main() async {
     'Lasers/laserBlue03.png'
   ]);
 
+  Flame.audio.loadAll(<String>[
+    'music.mp3',
+    'LaserLevelOne.mp3',
+    'laserhit.mp3',
+    'FriendlyLaser.mp3',
+  ]);
+
   SharedPreferences storage = await SharedPreferences.getInstance();
 
   GameEngine game = GameEngine(storage);
