@@ -68,6 +68,10 @@ class GameEngine extends Game {
 
     this.resize(await Flame.util.initialDimensions());
 
+    if (this.storage.getInt("highscore") == null) {
+      this.storage.setInt("highscore", 0);
+    }
+
     this._connectToESense();
 
     this.cooldown = 120;

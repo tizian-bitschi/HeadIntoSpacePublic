@@ -98,12 +98,17 @@ class PlayingView {
       this.healthDisplay.update(t);
       this.spawnCooldown++;
     } else {
+      int highscore = this.game.storage.getInt("highscore");
+      if (this.score > highscore) {
+        this.game.storage.setInt("highscore", this.score);
+        this.game.lostView.highscoreDisplay.updateHighscore();
+      }
       this.game.activeView = View.lost;
     }
   }
 
   void spawnEnemy() {
-    double x = this.rnd.nextDouble() * 8;
+    int x = this.rnd.nextInt(8);
     double y = 0;
 
     this.enemies.add(Shooter(this, x * this.game.tileSize, y));

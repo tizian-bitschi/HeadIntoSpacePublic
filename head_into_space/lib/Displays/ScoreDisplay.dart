@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/painting.dart';
-import 'package:head_into_space/GameEngine.dart';
 import 'package:head_into_space/Views/PlayingView.dart';
 
 class ScoreDisplay {

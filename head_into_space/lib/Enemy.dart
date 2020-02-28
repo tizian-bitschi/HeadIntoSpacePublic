@@ -79,10 +79,6 @@ class Enemy {
     }
   }
 
-  void onTapDown() {
-    this.isDead = true;
-  }
-
   void onHit(double damage) {
     if (this.health - damage < 0) {
       this.health = 0;

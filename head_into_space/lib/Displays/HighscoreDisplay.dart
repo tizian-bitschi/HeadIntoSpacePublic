@@ -4,7 +4,7 @@ import 'package:head_into_space/GameEngine.dart';
 import 'package:head_into_space/Views/PlayingView.dart';
 
 class HighscoreDisplay {
-  final PlayingView game;
+  final GameEngine game;
 
   TextPainter painter;
 
@@ -32,16 +32,17 @@ class HighscoreDisplay {
   }
 
   void updateHighscore() {
-    if ((painter.text?.text ?? '') !=
-        "Health: " + this.game.player.health.toString()) {
-      this.painter.text = TextSpan(
-        text: "Health: " + this.game.player.health.toString(),
-        style: textStyle,
-      );
+    int highscore = this.game.storage.getInt("highscore");
 
-      this.painter.layout();
+    this.painter.text = TextSpan(
+      text: "Highscore: " + highscore.toString(),
+      style: textStyle,
+    );
 
-      this.position = Offset(0, this.painter.height / 2);
-    }
+    this.painter.layout();
+
+    this.position = Offset(
+        this.game.screenSize.width / 2 - this.painter.width / 2,
+        this.game.screenSize.height / 2 - this.painter.height / 2);
   }
 }
