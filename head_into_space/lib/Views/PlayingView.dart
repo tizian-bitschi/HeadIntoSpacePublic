@@ -122,6 +122,7 @@ class PlayingView {
         this.game.storage.setInt("highscore", this.score);
         this.game.lostView.highscoreDisplay.updateHighscore();
       }
+      this.game.lostView.scoreLost.updateScore();
       this.game.activeView = View.lost;
     }
   }

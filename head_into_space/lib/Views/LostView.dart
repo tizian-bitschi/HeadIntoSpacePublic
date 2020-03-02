@@ -6,6 +6,7 @@ import 'package:head_into_space/Displays/HighscoreDisplay.dart';
 import 'package:head_into_space/GameEngine.dart';
 import 'package:head_into_space/View.dart';
 import 'package:head_into_space/Views/PlayingView.dart';
+import 'package:head_into_space/Displays/ScoreLostDisplay.dart';
 
 class LostView {
   final GameEngine game;
@@ -13,6 +14,8 @@ class LostView {
   HighscoreDisplay highscoreDisplay;
 
   Rect lostRect;
+
+  ScoreLostDisplay scoreLost;
 
   Sprite lostSprite;
 
@@ -25,12 +28,14 @@ class LostView {
     this.startButton = StartButton(this.game);
     this.highscoreDisplay = HighscoreDisplay(this.game);
     this.highscoreDisplay.updateHighscore();
+    this.scoreLost = ScoreLostDisplay(this.game);
   }
 
   void render(Canvas c) {
     this.lostSprite.renderRect(c, this.lostRect);
     this.startButton.render(c);
     this.highscoreDisplay.render(c);
+    this.scoreLost.render(c);
   }
 
   void update(double t) {}

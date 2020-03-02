@@ -208,7 +208,7 @@ class GameEngine extends Game {
   }
 
   void _startListenToSensorEvents() async {
-    console.log(this.listening.toString());
+    console.log(this._event);
     // subscribe to sensor event from the eSense device
     subscription = ESenseManager.sensorEvents.listen((event) {
       this.listening = true;
